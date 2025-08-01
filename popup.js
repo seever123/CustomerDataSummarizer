@@ -505,11 +505,11 @@ class CustomerDataSummarizer {
         });
         
         let summary = `Customer Activity Summary:\n\n`;
-        summary += `📊 Total Transactions: ${totalTransactions}\n`;
-        summary += `💰 Balance Change: ${startBalance.toFixed(2)} → ${endBalance.toFixed(2)} IQD (${balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} IQD)\n`;
-        summary += `💳 Total Account Changes: ${totalRelatedChanges.toFixed(2)} IQD\n\n`;
+        summary += `Total Transactions: ${totalTransactions}\n`;
+        summary += `Balance Change: ${startBalance.toFixed(2)} → ${endBalance.toFixed(2)} IQD (${balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} IQD)\n`;
+        summary += `Total Account Changes: ${totalRelatedChanges.toFixed(2)} IQD\n\n`;
         
-        summary += `📋 Activity Breakdown:\n`;
+        summary += `Activity Breakdown:\n`;
         Object.entries(categoryBreakdown).forEach(([category, info]) => {
             summary += `• ${category}: ${info.count} transactions, ${info.totalChanges.toFixed(2)} IQD\n`;
             if (info.services.size > 0) {
