@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 450px;
+            min-height: 300px;
+            padding: 15px;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0078d4, #106ebe);
+            color: white;
+            padding: 12px 15px;
+            margin: -15px -15px 15px -15px;
+            border-radius: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .date-filters {
+            margin-bottom: 15px;
+        }
+        
+        .date-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .date-input label {
+            width: 80px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #323130;
+        }
+        
+        .date-input input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-btn {
+            flex: 1;
+            padding: 6px 8px;
+            background: #f3f2f1;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            background: #e1dfdd;
+        }
+        
+        .quick-btn.active {
+            background: #0078d4;
+            color: white;
+            border-color: #0078d4;
+        }
+        
+        .dropdown-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-item label {
+            width: 80px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #323130;
+        }
+        
+        .dropdown-item select {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #106ebe;
+        }
+        
+        .btn-secondary {
+            background: #f3f2f1;
+            color: #323130;
+            border: 1px solid #d1d1d1;
+        }
+        
+        .btn-secondary:hover {
+            background: #e1dfdd;
+        }
+        
+        .summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.5;
+        }
+        
+        .summary h3 {
+            margin: 0 0 10px 0;
+            color: #323130;
+            font-size: 14px;
+        }
+        
+        .summary-content {
+            font-size: 12px;
+            color: #484644;
+            white-space: pre-line;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        .error {
+            background: #fde7e9;
+            color: #d13438;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Customer Data Summarizer</h1>
+    </div>
+    
+    <div class="status" id="status">Ready to analyze customer data</div>
+    
+    <div class="controls">
+        <div class="date-filters">
+            <div class="date-input">
+                <label>Start:</label>
+                <input type="datetime-local" id="startTime">
+            </div>
+            <div class="date-input">
+                <label>End:</label>
+                <input type="datetime-local" id="endTime">
+            </div>
+        </div>
+        
+        <div class="quick-filters">
+            <button class="quick-btn" id="todayBtn">Today</button>
+            <button class="quick-btn" id="weekBtn">This Week</button>
+            <button class="quick-btn" id="monthBtn">Last Month</button>
+        </div>
+        
+        <div class="dropdown-group">
+            <div class="dropdown-item">
+                <label>Category:</label>
+                <select id="category">
+                    <option value="">All Categories</option>
+                    <option value="Loan">Loan</option>
+                    <option value="SMS Service">SMS Service</option>
+                    <option value="Activation">Activation</option>
+                    <option value="Deactivation">Deactivation</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Account balance adjustment">Account balance adjustment</option>
+                    <option value="Recharge">Recharge</option>
+                    <option value="API change">API change</option>
+                    <option value="Life Cycle change">Life Cycle change</option>
+                    <option value="MMS service">MMS service</option>
+                    <option value="One-off fee deduction">One-off fee deduction</option>
+                    <option value="GPRS charging">GPRS charging</option>
+                    <option value="content-based charging">Content-based charging</option>
+                    <option value="Recurring charge">Recurring charge</option>
+                    <option value="Management service">Management service</option>
+                    <option value="Charge2bill or ABM event">Charge2bill or ABM event</option>
+                </select>
+            </div>
+            
+            <div class="dropdown-item">
+                <label>Service:</label>
+                <select id="serviceType">
+                    <option value="">All Services</option>
+                </select>
+            </div>
+            
+            <div class="dropdown-item">
+                <label>Flow:</label>
+                <select id="flowType">
+                    <option value="">All Flow Types</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="searchBtn">Search & Analyze</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+    
+    <div class="summary" id="summarySection" style="display: none;">
+        <h3>Customer Activity Summary</h3>
+        <div class="summary-content" id="summaryContent"></div>
+    </div>
+    
+    <div class="loading" id="loadingSection" style="display: none;">
+        Analyzing customer data...
+    </div>
+    
+    <div class="error" id="errorSection" style="display: none;"></div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
