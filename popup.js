@@ -1,64 +1,69 @@
-// Debug version of popup.js with extensive logging
+// Fixed popup.js with improved error handling and debugging
 
-class CustomerDataSummarizerDebug {
+class CustomerDataSummarizer {
     constructor() {
-        console.log('CustomerDataSummarizer Debug: Initializing...');
+        console.log('CustomerDataSummarizer: Initializing...');
         this.serviceTypeMap = {
             'Voice': ['On-net voice', 'Call without border', 'Off-net voice', 'IDD', 'International Roaming', 'International Call', 'Special number of a non-zero-tariff voice', 'Voice special number with 0 tariff', 'Voice mail', 'Long distance', 'National roaming voice'],
             'SMS Service': ['On-net SMS', 'Off-net SMS', 'International SMS'],
             'MMS service': ['On-net MMS', 'Off-net MMS', 'International MMS'],
-            'GPRS charging': ['Data usage', 'Internet browsing', 'Email']
+            'GPRS charging': ['Data usage', 'Internet browsing', 'Email'],
+            'Recharge': ['Credit Recharge', 'Voucher Recharge', 'Online Recharge'],
+            'Recurring charge': ['Monthly Fee', 'Weekly Fee', 'Daily Fee']
         };
         
         this.flowTypeMap = {
             'On-net voice': ['Outbound Call', 'Inbound Call', 'Call Forward'],
             'Off-net voice': ['Outbound Call', 'Inbound Call'],
-            'IDD': ['Outbound Call']
+            'IDD': ['Outbound Call'],
+            'On-net SMS': ['Outbound SMS', 'Inbound SMS'],
+            'Data usage': ['Internet browsing', 'Email', 'Social Media'],
+            'Credit Recharge': ['Account Top-up', 'Balance Transfer']
         };
         
         this.init();
     }
     
     init() {
-        console.log('CustomerDataSummarizer Debug: Setting up...');
+        console.log('CustomerDataSummarizer: Setting up...');
         this.setupEventListeners();
         this.setupDateDefaults();
-        this.updateStatus('Debug version ready - check console for logs');
+        this.updateStatus('Ready to analyze customer data');
     }
     
     setupEventListeners() {
-        console.log('CustomerDataSummarizer Debug: Setting up event listeners...');
+        console.log('CustomerDataSummarizer: Setting up event listeners...');
         
         // Quick date filters
-        document.getElementById('todayBtn').addEventListener('click', () => {
+        document.getElementById('todayBtn')?.addEventListener('click', () => {
             console.log('Today button clicked');
             this.setDateRange('today');
         });
-        document.getElementById('weekBtn').addEventListener('click', () => {
+        document.getElementById('weekBtn')?.addEventListener('click', () => {
             console.log('Week button clicked');
             this.setDateRange('week');
         });
-        document.getElementById('monthBtn').addEventListener('click', () => {
+        document.getElementById('monthBtn')?.addEventListener('click', () => {
             console.log('Month button clicked');
             this.setDateRange('month');
         });
         
         // Dropdown dependencies
-        document.getElementById('category').addEventListener('change', (e) => {
+        document.getElementById('category')?.addEventListener('change', (e) => {
             console.log('Category changed to:', e.target.value);
             this.updateServiceTypes(e.target.value);
         });
-        document.getElementById('serviceType').addEventListener('change', (e) => {
+        document.getElementById('serviceType')?.addEventListener('change', (e) => {
             console.log('Service type changed to:', e.target.value);
             this.updateFlowTypes(e.target.value);
         });
         
         // Action buttons
-        document.getElementById('searchBtn').addEventListener('click', () => {
+        document.getElementById('searchBtn')?.addEventListener('click', () => {
             console.log('Search button clicked - starting analysis...');
             this.searchAndAnalyze();
         });
-        document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('resetBtn')?.addEventListener('click', () => {
             console.log('Reset button clicked');
             this.resetFilters();
         });
@@ -69,9 +74,14 @@ class CustomerDataSummarizerDebug {
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const endOfDay = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1);
         
-        document.getElementById('startTime').value = this.formatDateTime(today);
-        document.getElementById('endTime').value = this.formatDateTime(endOfDay);
-        console.log('Date defaults set:', this.formatDateTime(today), 'to', this.formatDateTime(endOfDay));
+        const startTimeEl = document.getElementById('startTime');
+        const endTimeEl = document.getElementById('endTime');
+        
+        if (startTimeEl && endTimeEl) {
+            startTimeEl.value = this.formatDateTime(today);
+            endTimeEl.value = this.formatDateTime(endOfDay);
+            console.log('Date defaults set:', this.formatDateTime(today), 'to', this.formatDateTime(endOfDay));
+        }
     }
     
     formatDateTime(date) {
@@ -90,7 +100,7 @@ class CustomerDataSummarizerDebug {
             case 'today':
                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
-                document.getElementById('todayBtn').classList.add('active');
+                document.getElementById('todayBtn')?.classList.add('active');
                 break;
                 
             case 'week':
@@ -99,24 +109,31 @@ class CustomerDataSummarizerDebug {
                 startOfWeek.setHours(0, 0, 0, 0);
                 startDate = startOfWeek;
                 endDate = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
-                document.getElementById('weekBtn').classList.add('active');
+                document.getElementById('weekBtn')?.classList.add('active');
                 break;
                 
             case 'month':
                 startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-                document.getElementById('monthBtn').classList.add('active');
+                document.getElementById('monthBtn')?.classList.add('active');
                 break;
         }
         
-        document.getElementById('startTime').value = this.formatDateTime(startDate);
-        document.getElementById('endTime').value = this.formatDateTime(endDate);
-        console.log('Date range set to:', this.formatDateTime(startDate), 'to', this.formatDateTime(endDate));
+        const startTimeEl = document.getElementById('startTime');
+        const endTimeEl = document.getElementById('endTime');
+        
+        if (startTimeEl && endTimeEl) {
+            startTimeEl.value = this.formatDateTime(startDate);
+            endTimeEl.value = this.formatDateTime(endDate);
+            console.log('Date range set to:', this.formatDateTime(startDate), 'to', this.formatDateTime(endDate));
+        }
     }
     
     updateServiceTypes(category) {
         console.log('Updating service types for category:', category);
         const serviceSelect = document.getElementById('serviceType');
+        if (!serviceSelect) return;
+        
         serviceSelect.innerHTML = '<option value="">All Services</option>';
         
         if (this.serviceTypeMap[category]) {
@@ -135,6 +152,8 @@ class CustomerDataSummarizerDebug {
     updateFlowTypes(serviceType) {
         console.log('Updating flow types for service type:', serviceType);
         const flowSelect = document.getElementById('flowType');
+        if (!flowSelect) return;
+        
         flowSelect.innerHTML = '<option value="">All Flow Types</option>';
         
         if (this.flowTypeMap[serviceType]) {
@@ -150,9 +169,14 @@ class CustomerDataSummarizerDebug {
     
     resetFilters() {
         console.log('Resetting all filters...');
-        document.getElementById('category').selectedIndex = 0;
-        document.getElementById('serviceType').innerHTML = '<option value="">All Services</option>';
-        document.getElementById('flowType').innerHTML = '<option value="">All Flow Types</option>';
+        const categoryEl = document.getElementById('category');
+        const serviceTypeEl = document.getElementById('serviceType');
+        const flowTypeEl = document.getElementById('flowType');
+        
+        if (categoryEl) categoryEl.selectedIndex = 0;
+        if (serviceTypeEl) serviceTypeEl.innerHTML = '<option value="">All Services</option>';
+        if (flowTypeEl) flowTypeEl.innerHTML = '<option value="">All Flow Types</option>';
+        
         document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
         this.setupDateDefaults();
         this.hideAllSections();
@@ -162,7 +186,7 @@ class CustomerDataSummarizerDebug {
     async searchAndAnalyze() {
         console.log('=== STARTING SEARCH AND ANALYZE ===');
         this.showLoading();
-        this.updateStatus('Applying filters and searching...');
+        this.updateStatus('Checking current page...');
         
         try {
             // Get current tab
@@ -174,58 +198,37 @@ class CustomerDataSummarizerDebug {
             }
             console.log('Current tab:', tab.url);
             
+            // Check if we're on the right page
+            this.updateStatus('Verifying page compatibility...');
+            const pageCheckResult = await this.checkPageCompatibility(tab.id);
+            console.log('Page check result:', pageCheckResult);
+            
+            if (!pageCheckResult.isCompatible) {
+                throw new Error(pageCheckResult.message);
+            }
+            
             // Get filter values
             const filters = this.getFilterValues();
             console.log('Filter values:', filters);
             
-            // Apply filters to the portal page
-            console.log('Applying filters to portal page...');
-            const filterResults = await chrome.scripting.executeScript({
-                target: {tabId: tab.id},
-                func: this.applyFiltersToPortal,
-                args: [filters]
-            });
-            console.log('Filter results:', filterResults);
+            // Apply filters
+            this.updateStatus('Applying filters...');
+            await this.applyFilters(tab.id, filters);
             
-            // Wait a moment for the page to update
-            console.log('Waiting for page to update...');
-            await this.delay(3000); // Increased delay for debugging
+            // Wait for search results
+            this.updateStatus('Waiting for search results...');
+            await this.delay(3000);
             
-            // Extract and analyze data
-            console.log('Extracting table data...');
-            const results = await chrome.scripting.executeScript({
-                target: {tabId: tab.id},
-                func: this.extractTableData
-            });
-            
-            console.log('Raw results from extraction:', results);
-            
-            // Check if we got valid results
-            if (!results || !results[0]) {
-                throw new Error('No results returned from content script');
-            }
-            
-            if (!results[0].result) {
-                throw new Error('Results object is null or undefined');
-            }
-            
-            const result = results[0].result;
-            console.log('Parsed result:', result);
-            
-            // Check for error in the result
-            if (result.error) {
-                throw new Error(result.error);
-            }
-            
-            // Check if we have data
-            if (!result.data) {
-                throw new Error('No data property in result');
-            }
-            
-            const data = result.data;
+            // Extract data
+            this.updateStatus('Extracting table data...');
+            const data = await this.extractTableData(tab.id);
             console.log('Extracted data:', data);
-            console.log('Number of records:', data.length);
             
+            if (!data || data.length === 0) {
+                throw new Error('No data found. Please ensure the search returned results.');
+            }
+            
+            // Generate and show summary
             const summary = this.generateSummary(data);
             console.log('Generated summary:', summary);
             
@@ -236,178 +239,238 @@ class CustomerDataSummarizerDebug {
         } catch (error) {
             console.error('=== SEARCH AND ANALYZE ERROR ===');
             console.error('Error details:', error);
-            console.error('Error stack:', error.stack);
             this.showError(`Error: ${error.message}`);
-            this.updateStatus('Analysis failed - check console for details');
+            this.updateStatus('Analysis failed');
+        }
+    }
+    
+    async checkPageCompatibility(tabId) {
+        try {
+            const results = await chrome.scripting.executeScript({
+                target: {tabId: tabId},
+                func: () => {
+                    const title = document.title.toLowerCase();
+                    const bodyText = document.body.textContent.toLowerCase();
+                    const hasTable = !!document.querySelector('tbody');
+                    const hasDateInputs = document.querySelectorAll('input[type="datetime-local"]').length >= 2;
+                    const hasSelects = document.querySelectorAll('select').length > 0;
+                    
+                    const isSubscriberPage = title.includes('subscriber') || 
+                                           bodyText.includes('subscriber') ||
+                                           bodyText.includes('call details');
+                    
+                    return {
+                        title: document.title,
+                        hasTable,
+                        hasDateInputs,
+                        hasSelects,
+                        isSubscriberPage,
+                        tableRowCount: document.querySelectorAll('tbody tr').length
+                    };
+                }
+            });
+            
+            const pageInfo = results[0].result;
+            console.log('Page info:', pageInfo);
+            
+            if (!pageInfo.isSubscriberPage) {
+                return {
+                    isCompatible: false,
+                    message: 'Please navigate to the Subscriber page with Call Details Record tab active.'
+                };
+            }
+            
+            if (!pageInfo.hasTable) {
+                return {
+                    isCompatible: false,
+                    message: 'Call Details Record table not found on this page.'
+                };
+            }
+            
+            if (!pageInfo.hasDateInputs || !pageInfo.hasSelects) {
+                return {
+                    isCompatible: false,
+                    message: 'Required filter controls not found. Please ensure all filters are visible.'
+                };
+            }
+            
+            return {
+                isCompatible: true,
+                message: 'Page is compatible',
+                pageInfo
+            };
+            
+        } catch (error) {
+            console.error('Error checking page compatibility:', error);
+            return {
+                isCompatible: false,
+                message: 'Could not analyze the current page. Please refresh and try again.'
+            };
+        }
+    }
+    
+    async applyFilters(tabId, filters) {
+        try {
+            const results = await chrome.scripting.executeScript({
+                target: {tabId: tabId},
+                func: (filters) => {
+                    console.log('Applying filters:', filters);
+                    
+                    // Set datetime inputs
+                    const dateInputs = document.querySelectorAll('input[type="datetime-local"]');
+                    if (dateInputs.length >= 2) {
+                        if (filters.startTime) {
+                            dateInputs[0].value = filters.startTime;
+                            dateInputs[0].dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        if (filters.endTime) {
+                            dateInputs[1].value = filters.endTime;
+                            dateInputs[1].dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                    
+                    // Set category dropdown
+                    const selects = document.querySelectorAll('select');
+                    if (filters.category && selects.length > 0) {
+                        const categorySelect = selects[0]; // Usually first select is category
+                        for (let option of categorySelect.options) {
+                            if (option.value === filters.category || option.text === filters.category) {
+                                categorySelect.value = option.value;
+                                categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Trigger search
+                    setTimeout(() => {
+                        const searchBtn = document.querySelector('button[onclick*="search"], .btn-primary, button:contains("Search")') ||
+                                        Array.from(document.querySelectorAll('button')).find(btn => 
+                                            btn.textContent.toLowerCase().includes('search'));
+                        
+                        if (searchBtn) {
+                            console.log('Clicking search button');
+                            searchBtn.click();
+                        } else {
+                            console.warn('Search button not found');
+                        }
+                    }, 1000);
+                    
+                    return { success: true };
+                },
+                args: [filters]
+            });
+            
+            return results[0].result;
+            
+        } catch (error) {
+            console.error('Error applying filters:', error);
+            throw new Error('Failed to apply filters: ' + error.message);
+        }
+    }
+    
+    async extractTableData(tabId) {
+        try {
+            const results = await chrome.scripting.executeScript({
+                target: {tabId: tabId},
+                func: () => {
+                    console.log('Extracting table data...');
+                    
+                    const tbody = document.querySelector('tbody');
+                    if (!tbody) {
+                        throw new Error('Table body not found');
+                    }
+                    
+                    const rows = tbody.querySelectorAll('tr');
+                    console.log('Found', rows.length, 'rows');
+                    
+                    const data = [];
+                    
+                    rows.forEach((row, index) => {
+                        const cells = row.querySelectorAll('td, th');
+                        
+                        if (cells.length < 15) {
+                            console.log(`Skipping row ${index}: only ${cells.length} cells`);
+                            return;
+                        }
+                        
+                        // Check for "no data" messages
+                        const firstCellText = cells[0]?.textContent?.trim().toLowerCase() || '';
+                        if (firstCellText.includes('no records') || 
+                            firstCellText.includes('no data') || 
+                            firstCellText.includes('no matching')) {
+                            console.log(`Skipping row ${index}: no data message`);
+                            return;
+                        }
+                        
+                        try {
+                            const record = {
+                                chargedNumber: cells[0]?.textContent?.trim() || '',
+                                callingLocation: cells[1]?.textContent?.trim() || '',
+                                peerNumber: cells[2]?.textContent?.trim() || '',
+                                category: cells[3]?.textContent?.trim() || '',
+                                serviceType: cells[4]?.textContent?.trim() || '',
+                                flowType: cells[5]?.textContent?.trim() || '',
+                                roamingType: cells[6]?.textContent?.trim() || '',
+                                billCycle: cells[7]?.textContent?.trim() || '',
+                                startEndTime: cells[8]?.textContent?.trim() || '',
+                                actualVolume: parseFloat(cells[9]?.textContent?.replace(/[^\d.-]/g, '') || '0'),
+                                unit: cells[10]?.textContent?.trim() || '',
+                                currency: cells[11]?.textContent?.trim() || 'IQD',
+                                relatedAccountChanges: parseFloat(cells[12]?.textContent?.replace(/[^\d.-]/g, '') || '0'),
+                                relatedAccountRemaining: parseFloat(cells[13]?.textContent?.replace(/[^\d.-]/g, '') || '0'),
+                                relatedOfferingName: cells[14]?.textContent?.trim() || '',
+                                beforeBalance: parseFloat(cells[15]?.textContent?.replace(/[^\d.-]/g, '') || '0'),
+                                afterBalance: parseFloat(cells[16]?.textContent?.replace(/[^\d.-]/g, '') || '0'),
+                                vowfi: cells[17]?.textContent?.trim() || '',
+                                businessRemark: cells[18]?.textContent?.trim() || ''
+                            };
+                            
+                            // Only add records with meaningful data
+                            if (record.chargedNumber || record.category) {
+                                data.push(record);
+                                console.log(`Added record ${data.length}:`, record.category, record.serviceType);
+                            }
+                            
+                        } catch (recordError) {
+                            console.warn(`Error processing row ${index}:`, recordError);
+                        }
+                    });
+                    
+                    console.log('Extraction complete. Total records:', data.length);
+                    return data;
+                }
+            });
+            
+            return results[0].result;
+            
+        } catch (error) {
+            console.error('Error extracting table data:', error);
+            throw new Error('Failed to extract table data: ' + error.message);
         }
     }
     
     getFilterValues() {
+        const startTimeEl = document.getElementById('startTime');
+        const endTimeEl = document.getElementById('endTime');
+        const categoryEl = document.getElementById('category');
+        const serviceTypeEl = document.getElementById('serviceType');
+        const flowTypeEl = document.getElementById('flowType');
+        
         const filters = {
-            startTime: document.getElementById('startTime').value,
-            endTime: document.getElementById('endTime').value,
-            category: document.getElementById('category').value,
-            serviceType: document.getElementById('serviceType').value,
-            flowType: document.getElementById('flowType').value
+            startTime: startTimeEl?.value || '',
+            endTime: endTimeEl?.value || '',
+            category: categoryEl?.value || '',
+            serviceType: serviceTypeEl?.value || '',
+            flowType: flowTypeEl?.value || ''
         };
+        
         console.log('Getting filter values:', filters);
         return filters;
     }
     
-    // This function runs in the content script context
-    applyFiltersToPortal(filters) {
-        console.log('=== APPLYING FILTERS TO PORTAL ===');
-        console.log('Filters to apply:', filters);
-        
-        try {
-            // Find and set datetime inputs
-            const allDateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
-            console.log('Found', allDateTimeInputs.length, 'datetime inputs');
-            
-            if (allDateTimeInputs.length >= 2) {
-                if (filters.startTime) {
-                    allDateTimeInputs[0].value = filters.startTime;
-                    allDateTimeInputs[0].dispatchEvent(new Event('change', { bubbles: true }));
-                    console.log('Set start time to:', filters.startTime);
-                }
-                
-                if (filters.endTime) {
-                    allDateTimeInputs[1].value = filters.endTime;
-                    allDateTimeInputs[1].dispatchEvent(new Event('change', { bubbles: true }));
-                    console.log('Set end time to:', filters.endTime);
-                }
-            } else {
-                console.warn('Not enough datetime inputs found');
-            }
-            
-            // Find and set dropdowns
-            const allSelects = document.querySelectorAll('select');
-            console.log('Found', allSelects.length, 'select elements');
-            
-            if (filters.category && allSelects.length > 0) {
-                allSelects[0].value = filters.category;
-                allSelects[0].dispatchEvent(new Event('change', { bubbles: true }));
-                console.log('Set category to:', filters.category);
-            }
-            
-            // Trigger search button
-            setTimeout(() => {
-                const searchButtons = document.querySelectorAll('button');
-                console.log('Found', searchButtons.length, 'buttons');
-                
-                let searchButton = null;
-                for (let btn of searchButtons) {
-                    const text = btn.textContent.toLowerCase();
-                    if (text.includes('search') || btn.classList.contains('btn-primary')) {
-                        searchButton = btn;
-                        break;
-                    }
-                }
-                
-                if (searchButton) {
-                    console.log('Clicking search button:', searchButton.textContent);
-                    searchButton.click();
-                } else {
-                    console.warn('Search button not found');
-                }
-            }, 1000);
-            
-            console.log('=== FILTERS APPLIED ===');
-            return { success: true };
-            
-        } catch (error) {
-            console.error('Error applying filters:', error);
-            return { error: 'Failed to apply filters: ' + error.message };
-        }
-    }
-    
-    // This function runs in the content script context
-    extractTableData() {
-        console.log('=== EXTRACTING TABLE DATA ===');
-        
-        try {
-            const tbody = document.querySelector('tbody');
-            if (!tbody) {
-                console.error('No tbody element found');
-                return { error: 'Call Details Record table not found. Please navigate to the Subscriber page > Call Details Record tab.' };
-            }
-            
-            const rows = tbody.querySelectorAll('tr');
-            console.log('Found', rows.length, 'rows in tbody');
-            
-            if (rows.length === 0) {
-                return { error: 'No data rows found in the table.' };
-            }
-            
-            const data = [];
-            
-            rows.forEach((row, index) => {
-                const cells = row.querySelectorAll('td, th');
-                console.log(`Row ${index}: ${cells.length} cells`);
-                
-                if (cells.length < 15) {
-                    console.log(`Skipping row ${index}: insufficient cells`);
-                    return;
-                }
-                
-                // Check for "no data" messages
-                const firstCellText = cells[0]?.textContent?.trim().toLowerCase() || '';
-                if (firstCellText.includes('no records') || firstCellText.includes('no data')) {
-                    console.log(`Skipping row ${index}: no data message`);
-                    return;
-                }
-                
-                try {
-                    const record = {
-                        chargedNumber: cells[0]?.textContent?.trim() || '',
-                        callingLocation: cells[1]?.textContent?.trim() || '',
-                        peerNumber: cells[2]?.textContent?.trim() || '',
-                        category: cells[3]?.textContent?.trim() || '',
-                        serviceType: cells[4]?.textContent?.trim() || '',
-                        flowType: cells[5]?.textContent?.trim() || '',
-                        roamingType: cells[6]?.textContent?.trim() || '',
-                        billCycle: cells[7]?.textContent?.trim() || '',
-                        startEndTime: cells[8]?.textContent?.trim() || '',
-                        actualVolume: parseFloat(cells[9]?.textContent?.trim() || '0'),
-                        unit: cells[10]?.textContent?.trim() || '',
-                        currency: cells[11]?.textContent?.trim() || 'IQD',
-                        relatedAccountChanges: parseFloat(cells[12]?.textContent?.trim() || '0'),
-                        relatedAccountRemaining: parseFloat(cells[13]?.textContent?.trim() || '0'),
-                        relatedOfferingName: cells[14]?.textContent?.trim() || '',
-                        beforeBalance: parseFloat(cells[15]?.textContent?.trim() || '0'),
-                        afterBalance: parseFloat(cells[16]?.textContent?.trim() || '0'),
-                        vowfi: cells[17]?.textContent?.trim() || '',
-                        businessRemark: cells[18]?.textContent?.trim() || ''
-                    };
-                    
-                    if (record.chargedNumber || record.category) {
-                        data.push(record);
-                        console.log(`Added record ${data.length}:`, record.category, record.serviceType);
-                    }
-                    
-                } catch (recordError) {
-                    console.warn(`Error processing row ${index}:`, recordError);
-                }
-            });
-            
-            console.log('=== EXTRACTION COMPLETE ===');
-            console.log('Total valid records found:', data.length);
-            
-            if (data.length === 0) {
-                return { error: 'No valid customer records found in the table. The table might be empty or filters may have excluded all records.' };
-            }
-            
-            return { data: data };
-            
-        } catch (error) {
-            console.error('Error extracting table data:', error);
-            return { error: `Failed to extract table data: ${error.message}` };
-        }
-    }
-    
     generateSummary(data) {
-        console.log('=== GENERATING SUMMARY ===');
-        console.log('Input data length:', data.length);
+        console.log('Generating summary for', data.length, 'records');
         
         if (!data || data.length === 0) {
             return 'No customer data found for the selected criteria.';
@@ -417,105 +480,98 @@ class CustomerDataSummarizerDebug {
         const firstRecord = data[0];
         const lastRecord = data[data.length - 1];
         
-        console.log('First record:', firstRecord);
-        console.log('Last record:', lastRecord);
-        
-        const startBalance = firstRecord.beforeBalance;
-        const endBalance = lastRecord.afterBalance;
+        const startBalance = firstRecord.beforeBalance || 0;
+        const endBalance = lastRecord.afterBalance || 0;
         const balanceChange = endBalance - startBalance;
         
-        const totalRelatedChanges = data.reduce((sum, record) => sum + record.relatedAccountChanges, 0);
+        const totalRelatedChanges = data.reduce((sum, record) => sum + (record.relatedAccountChanges || 0), 0);
         
-        console.log('Balance calculation:', {
-            startBalance,
-            endBalance,
-            balanceChange,
-            totalRelatedChanges
-        });
-        
-        // Group by category and service type
+        // Group by category
         const categoryBreakdown = {};
-        
         data.forEach(record => {
-            if (!categoryBreakdown[record.category]) {
-                categoryBreakdown[record.category] = {};
-            }
-            
-            if (!categoryBreakdown[record.category][record.serviceType]) {
-                categoryBreakdown[record.category][record.serviceType] = {
-                    totalVolume: 0,
+            const category = record.category || 'Unknown';
+            if (!categoryBreakdown[category]) {
+                categoryBreakdown[category] = {
+                    count: 0,
                     totalChanges: 0,
-                    unit: record.unit,
-                    count: 0
+                    services: new Set()
                 };
             }
-            
-            categoryBreakdown[record.category][record.serviceType].totalVolume += record.actualVolume;
-            categoryBreakdown[record.category][record.serviceType].totalChanges += record.relatedAccountChanges;
-            categoryBreakdown[record.category][record.serviceType].count += 1;
-        });
-        
-        console.log('Category breakdown:', categoryBreakdown);
-        
-        let summary = `Here's a summary of the customer's activity:\n\n`;
-        summary += `The customer had a total of **${totalTransactions} transactions**.\n`;
-        summary += `Their overall balance started at **${startBalance.toFixed(2)} IQD** and ended at **${endBalance.toFixed(2)} IQD**, resulting in a change of **${balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} IQD**.\n`;
-        summary += `There were **${totalRelatedChanges.toFixed(2)} IQD** in related account changes, which typically reflects deductions for services or offers.\n\n`;
-        
-        summary += `Breaking down the activity by service type:\n`;
-        
-        Object.keys(categoryBreakdown).forEach(category => {
-            if (category) {
-                summary += `- For **${category}** services:\n`;
-                Object.keys(categoryBreakdown[category]).forEach(serviceType => {
-                    if (serviceType) {
-                        const service = categoryBreakdown[category][serviceType];
-                        summary += `  - **${serviceType}**: ${service.count} transactions, total volume of **${service.totalVolume.toFixed(2)} ${service.unit}** and related account changes of **${service.totalChanges.toFixed(2)} IQD**.\n`;
-                    }
-                });
+            categoryBreakdown[category].count++;
+            categoryBreakdown[category].totalChanges += (record.relatedAccountChanges || 0);
+            if (record.serviceType) {
+                categoryBreakdown[category].services.add(record.serviceType);
             }
         });
         
-        console.log('Generated summary:', summary);
+        let summary = `Customer Activity Summary:\n\n`;
+        summary += `📊 Total Transactions: ${totalTransactions}\n`;
+        summary += `💰 Balance Change: ${startBalance.toFixed(2)} → ${endBalance.toFixed(2)} IQD (${balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} IQD)\n`;
+        summary += `💳 Total Account Changes: ${totalRelatedChanges.toFixed(2)} IQD\n\n`;
+        
+        summary += `📋 Activity Breakdown:\n`;
+        Object.entries(categoryBreakdown).forEach(([category, info]) => {
+            summary += `• ${category}: ${info.count} transactions, ${info.totalChanges.toFixed(2)} IQD\n`;
+            if (info.services.size > 0) {
+                summary += `  Services: ${Array.from(info.services).join(', ')}\n`;
+            }
+        });
+        
         return summary;
     }
     
     showLoading() {
         this.hideAllSections();
-        document.getElementById('loadingSection').style.display = 'block';
+        const loadingEl = document.getElementById('loadingSection');
+        if (loadingEl) loadingEl.style.display = 'block';
     }
     
     showSummary(summary) {
         this.hideAllSections();
-        document.getElementById('summaryContent').textContent = summary;
-        document.getElementById('summarySection').style.display = 'block';
+        const summaryEl = document.getElementById('summarySection');
+        const contentEl = document.getElementById('summaryContent');
+        if (summaryEl && contentEl) {
+            contentEl.textContent = summary;
+            summaryEl.style.display = 'block';
+        }
     }
     
     showError(message) {
         this.hideAllSections();
-        document.getElementById('errorSection').textContent = message;
-        document.getElementById('errorSection').style.display = 'block';
+        const errorEl = document.getElementById('errorSection');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
     }
     
     hideAllSections() {
-        document.getElementById('summarySection').style.display = 'none';
-        document.getElementById('loadingSection').style.display = 'none';
-        document.getElementById('errorSection').style.display = 'none';
+        const sections = ['summarySection', 'loadingSection', 'errorSection'];
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
     }
     
     updateStatus(message) {
-        document.getElementById('status').textContent = message;
-        console.log('Status update:', message);
+        const statusEl = document.getElementById('status');
+        if (statusEl) {
+            statusEl.textContent = message;
+        }
+        console.log('Status:', message);
     }
     
     delay(ms) {
-        console.log(`Waiting ${ms}ms...`);
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
 
-// Initialize the extension when popup loads
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded - initializing CustomerDataSummarizer Debug...');
-    new CustomerDataSummarizerDebug();
+    console.log('DOM loaded - initializing CustomerDataSummarizer...');
+    try {
+        new CustomerDataSummarizer();
+    } catch (error) {
+        console.error('Failed to initialize CustomerDataSummarizer:', error);
+    }
 });
